@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Grid } from 'semantic-ui-react';
 
 import { Controls } from './components/Controls';
 
@@ -46,24 +47,52 @@ class App extends Component {
     const { grid } = this.state;
     let iterationsCnt = 0;
     let newGrid = this.createEmptyMatrix();
-
+    let visitedDead = new Set();
+    
     for (let y = 0; y < size; y += 1) {
       for (let x = 0; x < size; x += 1) {
         iterationsCnt += 1;
+        
+        if (grid[y][x] === 1) {
+          let alive = this.countAlive(y, x);
+          iterationsCnt += 9;
+          
+          if (alive === 2 || alive === 3) {
+            newGrid[y][x] = 1;
+          }
+          
+          for (let i = - 1; i < 2; i += 1) {
+            for (let j = - 1; j < 2; j += 1) {
+              iterationsCnt += 1;
+              
+              if (i === 0 && j === 0) continue;
+              
+              let yy = (y + i);
+              let xx = (x + j);
+              
+              if (yy < 0 || yy > size - 1 || xx < 0 || xx > size - 1) {
+                continue;
+              }
 
-        let alive = this.countAlive(y, x);
-        iterationsCnt += 9;
-
-        if (grid[y][x] === 1 && (alive < 2 || alive > 3)) {
-          newGrid[y][x] = 0;
-        } else if(grid[y][x] === 0 && alive === 3) {
-          newGrid[y][x] = 1
-        } else {
-          newGrid[y][x] = grid[y][x];
+              if (grid[yy][xx] === 0) {
+                if (visitedDead.has(`${yy}-${xx}`)) continue
+                
+                visitedDead.add(`${yy}-${xx}`);
+                
+                let alive = this.countAlive(yy, xx);
+                
+                if (alive === 3) {
+                  newGrid[yy][xx] = 1;
+                }
+                
+              }
+            }
+          }
+          
         }
       }
     }
-
+      
     this.setState({
       grid: newGrid
     })
@@ -73,6 +102,7 @@ class App extends Component {
   }
 
   countAlive = (y, x) => {
+    const { size } = this;
     let { grid } = this.state;
     let alive = 0;
     
@@ -80,7 +110,11 @@ class App extends Component {
       for (let j = -1; j < 2; j += 1) {
         let yy = (y + i + this.size) % this.size;
         let xx = (x + j + this.size) % this.size;
-        
+
+        if (yy < 0 || yy > size - 1 || xx < 0 || xx > size - 1) {
+          continue;
+        }
+
         alive += grid[yy][xx];
       }
     }
@@ -98,26 +132,28 @@ class App extends Component {
     const { grid } = this.state;
 
     return (
-      <div className="App">
-        <div id="grid">
-        {
-          grid.map((row, y) => (
-            row.map((cell, x) => cell === 1 ? (
-              <div
-                className="cell"
-                key={`${y}-${x}`}
-                style={{
-                  left: x * 5,
-                  top: y * 5
-                }}              
-              >
-              </div>
-            ) : null)
-          ))
-        }
+      <Grid centered>
+        <div className="App">
+          <div id="grid">
+            {
+              grid.map((row, y) => (
+                row.map((cell, x) => cell === 1 ? (
+                  <div
+                    className="cell"
+                    key={`${y}-${x}`}
+                    style={{
+                      left: x * 5,
+                      top: y * 5
+                    }}              
+                  >
+                  </div>
+                ) : null)
+              ))
+            }
+          </div>
+          <Controls reset={this.reset} tick={this.tick} pause={this.pause} next={this.next} />
         </div>
-        <Controls reset={this.reset} tick={this.tick} pause={this.pause} next={this.next} />
-      </div>
+      </Grid>
     );
   }
 }
