@@ -6,9 +6,29 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  background-size: 5px 5px;
+  background-position: -0.5px -0.5px;
+  background-image: linear-gradient(to right, #eee 1px, transparent 1px),
+    linear-gradient(to bottom, #eee 1px, transparent 1px);
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+.App {
+  position: relative;
+}
+
+#grid {
+  min-height: 90vh;
+}
+
+.cell {
+  width: 5px;
+  height: 5px;
+  background: #000;
+  position: absolute;
 }
